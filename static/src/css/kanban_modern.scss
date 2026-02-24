@@ -3,7 +3,6 @@
  * Alphaqueb Consulting SAS
  *
  * v1.1 fixes:
- *  - Search panel / barra de búsqueda: sin tocar (reset completo)
  *  - Empty state eliminado (sin secciones vacías al no haber tarjetas)
  *  - Tarjetas con altura fija uniforme
  */
@@ -66,20 +65,6 @@
 
     // Altura fija de tarjeta
     --mkv-card-height:   160px;
-}
-
-// ─── Barra de búsqueda / control panel — SIN TOCAR ───────────────────────────
-// Reset completo para que quede idéntica a Odoo original
-.o_control_panel,
-.o_searchview,
-.o_searchview_input,
-.o_searchview .o_searchview_input_container,
-.o_cp_searchview,
-.o_search_panel,
-.o_facet_values,
-.o_dropdown_menu,
-.o_searchview_dropdown_toggler {
-    all: revert !important;
 }
 
 // ─── Contenedor principal Kanban ──────────────────────────────────────────────
@@ -275,13 +260,11 @@
     cursor: pointer;
     position: relative;
 
-    // Altura fija — todas las tarjetas del mismo tamaño
     height: var(--mkv-card-height);
     min-height: var(--mkv-card-height);
     max-height: var(--mkv-card-height);
     overflow: hidden;
 
-    // Layout interno en columna para distribuir título + body + footer
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -309,7 +292,6 @@
 
     &[color] { border-left-width: 4px; }
 
-    // ─── Título ───────────────────────────────────────────────────────────
     .o_kanban_record_title,
     .oe_kanban_card_title,
     strong,
@@ -325,7 +307,6 @@
         text-overflow: ellipsis;
     }
 
-    // ─── Cuerpo ───────────────────────────────────────────────────────────
     .o_kanban_record_body,
     .oe_kanban_card_body {
         font-size: var(--mkv-card-body-size);
@@ -335,7 +316,6 @@
         overflow: hidden;
     }
 
-    // ─── Footer ───────────────────────────────────────────────────────────
     .o_kanban_record_bottom,
     .oe_kanban_bottom {
         display: flex;
@@ -349,7 +329,6 @@
         flex-shrink: 0;
     }
 
-    // ─── Avatar ───────────────────────────────────────────────────────────
     .o_field_many2many_avatar img,
     .o_avatar img,
     .o_kanban_activity_btn img {
@@ -361,7 +340,6 @@
         object-fit: cover;
     }
 
-    // ─── Links ────────────────────────────────────────────────────────────
     a, .o_form_uri {
         color: var(--mkv-text-link);
         text-decoration: none;
@@ -373,7 +351,6 @@
         }
     }
 
-    // ─── Menú contextual ──────────────────────────────────────────────────
     .o_dropdown_kanban,
     .o_kanban_manage_menu,
     .o_kanban_record_menu {
@@ -405,7 +382,6 @@
     &:hover .o_kanban_manage_menu,
     &:hover .o_kanban_record_menu { opacity: 1; }
 
-    // ─── Numéricos / monetarios ───────────────────────────────────────────
     .o_field_monetary,
     .o_field_float,
     .o_field_integer {
@@ -416,7 +392,6 @@
         color: #1e293b;
     }
 
-    // ─── Priority / stars ─────────────────────────────────────────────────
     .o_priority .o_priority_star {
         color: #d1d5db;
         font-size: 0.9rem;
@@ -424,7 +399,6 @@
         &.fa-star { color: #f59e0b; }
     }
 
-    // ─── Activity button ──────────────────────────────────────────────────
     .o_kanban_activity_btn {
         font-size: 0.78rem;
         padding: 3px 8px;
@@ -436,7 +410,6 @@
         &.o_activity_btn_overdue { background: #fee2e2; color: #991b1b; border: none; }
     }
 
-    // ─── Color strip top ──────────────────────────────────────────────────
     .oe_kanban_colorstrip {
         position: absolute;
         top: 0; left: 0; right: 0;
@@ -445,7 +418,6 @@
         background: var(--mkv-accent);
     }
 
-    // ─── Cover image ──────────────────────────────────────────────────────
     .o_kanban_cover_image {
         margin: -14px -16px 10px;
         border-radius: var(--mkv-radius-card) var(--mkv-radius-card) 0 0;
@@ -460,7 +432,6 @@
         }
     }
 
-    // ─── BADGES ───────────────────────────────────────────────────────────
     .badge {
         font-size: var(--mkv-badge-size);
         font-weight: 700;
@@ -512,15 +483,13 @@
     }
 }
 
-// ─── Estado vacío — columna sin tarjetas: NO mostrar nada extra ───────────────
-// Odoo renderiza .o_kanban_no_records y helpers vacíos; los colapsamos.
+// ─── Estado vacío ─────────────────────────────────────────────────────────────
 .o_kanban_view .o_kanban_group .o_kanban_no_records,
 .o_kanban_view .o_kanban_group .o_nocontent_help,
 .o_kanban_view .o_kanban_group .o_view_nocontent {
     display: none !important;
 }
 
-// El empty state global (cuando NO hay grupos) sí se muestra, pero sin padding extra.
 .o_kanban_view > .o_nocontent_help,
 .o_kanban_view > .o_view_nocontent {
     padding: 48px 24px;
