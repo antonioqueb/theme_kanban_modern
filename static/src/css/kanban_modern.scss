@@ -1,0 +1,740 @@
+/**
+ * Modern Kanban View Theme v1 - Odoo 19 (Light Theme)
+ * Alphaqueb Consulting SAS
+ *
+ * Misma paleta y variables que Modern List View Theme v2
+ * Aplicado a: columnas kanban, tarjetas, headers, badges, progressbars,
+ *             quick-create, drag ghost, tooltips y scrollbars.
+ */
+
+// ─── Variables (espejo de list theme) ────────────────────────────────────────
+:root {
+    --mkv-font-base:    'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --mkv-font-numeric: 'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    // Fondos
+    --mkv-bg-page:        #f4f6fb;
+    --mkv-bg-column:      #f0f2f9;
+    --mkv-bg-column-hov:  #e8ebf5;
+    --mkv-bg-card:        #ffffff;
+    --mkv-bg-card-hov:    #f5f7ff;
+    --mkv-bg-card-sel:    #eef1ff;
+    --mkv-bg-ghost:       #e0e7ff;
+
+    // Bordes
+    --mkv-border-color:   #e4e7ef;
+    --mkv-border-card:    #e4e7ef;
+    --mkv-border-radius:  12px;
+    --mkv-radius-card:    10px;
+    --mkv-radius-sm:      6px;
+
+    // Texto
+    --mkv-text-col-title: #1f2937;
+    --mkv-text-card:      #27324a;
+    --mkv-text-muted:     #6b7280;
+    --mkv-text-link:      #3b5bdb;
+    --mkv-text-link-hov:  #1d3cb8;
+
+    // Acento
+    --mkv-accent:         #3b5bdb;
+    --mkv-accent-soft:    rgba(59, 91, 219, 0.09);
+    --mkv-accent-mid:     rgba(59, 91, 219, 0.18);
+
+    // Sombras
+    --mkv-shadow-col:     0 2px 8px rgba(0,0,0,.06);
+    --mkv-shadow-card:    0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    --mkv-shadow-card-hov:0 4px 12px rgba(59,91,219,.12), 0 8px 32px rgba(0,0,0,.08);
+    --mkv-shadow-drag:    0 8px 30px rgba(59,91,219,.20), 0 2px 8px rgba(0,0,0,.12);
+
+    // Transición
+    --mkv-transition:     150ms cubic-bezier(.4,0,.2,1);
+
+    // Tipografía
+    --mkv-col-title-size: 0.82rem;
+    --mkv-col-title-w:    700;
+    --mkv-card-title-size:0.875rem;
+    --mkv-card-body-size: 0.78rem;
+    --mkv-badge-size:     0.72rem;
+
+    // Spacing
+    --mkv-col-gap:        14px;
+    --mkv-col-pad:        12px;
+    --mkv-card-pad:       14px 16px;
+    --mkv-col-width:      272px;
+    --mkv-col-min-width:  230px;
+}
+
+// ─── Contenedor principal Kanban ──────────────────────────────────────────────
+.o_kanban_view {
+    background: var(--mkv-bg-page);
+    padding: 16px;
+    gap: var(--mkv-col-gap);
+    align-items: flex-start;
+
+    // Scrollbar horizontal
+    &::-webkit-scrollbar        { height: 7px; }
+    &::-webkit-scrollbar-track  { background: transparent; }
+    &::-webkit-scrollbar-thumb  {
+        background: #c9cfe8;
+        border-radius: 10px;
+        &:hover { background: #a0aac4; }
+    }
+}
+
+// ─── Columna (grupo) ──────────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_group {
+    background: var(--mkv-bg-column);
+    border: 1px solid var(--mkv-border-color);
+    border-radius: var(--mkv-border-radius);
+    box-shadow: var(--mkv-shadow-col);
+    min-width: var(--mkv-col-min-width);
+    width: var(--mkv-col-width);
+    flex-shrink: 0;
+    padding: var(--mkv-col-pad);
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background var(--mkv-transition);
+
+    // Columna plegada
+    &.o_column_folded {
+        width: 52px;
+        min-width: 52px;
+        background: var(--mkv-bg-column);
+        border-style: dashed;
+        cursor: pointer;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 14px 10px;
+
+        .o_kanban_header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            white-space: nowrap;
+        }
+
+        &:hover { background: var(--mkv-bg-column-hov); }
+    }
+
+    // Columna activa al hacer drop
+    &.o_kanban_drag_active_col {
+        background: #eef1ff;
+        border-color: var(--mkv-accent);
+        box-shadow: 0 0 0 2px var(--mkv-accent-mid);
+    }
+
+    // Scrollbar vertical dentro de columna
+    .o_kanban_group_list {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-bottom: 4px;
+
+        &::-webkit-scrollbar        { width: 4px; }
+        &::-webkit-scrollbar-track  { background: transparent; }
+        &::-webkit-scrollbar-thumb  {
+            background: #d1d5e0;
+            border-radius: 8px;
+            &:hover { background: #a0a8c0; }
+        }
+    }
+}
+
+// ─── Header de columna ────────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_group .o_kanban_header {
+    padding: 12px 4px 10px;
+    border-bottom: 2px solid var(--mkv-border-color);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    background: var(--mkv-bg-column);
+    z-index: 5;
+    border-radius: var(--mkv-border-radius) var(--mkv-border-radius) 0 0;
+
+    .o_kanban_header_title {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: default;
+    }
+
+    .o_column_title {
+        font-family: var(--mkv-font-base);
+        font-size: var(--mkv-col-title-size);
+        font-weight: var(--mkv-col-title-w);
+        color: var(--mkv-text-col-title);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    // Badge contador de tarjetas
+    .o_kanban_counter {
+        font-family: var(--mkv-font-numeric);
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: var(--mkv-accent-soft);
+        color: var(--mkv-accent);
+        border-radius: 20px;
+        padding: 2px 9px;
+        min-width: 24px;
+        text-align: center;
+        letter-spacing: 0.01em;
+    }
+
+    // Progresbar monetaria
+    .o_kanban_group_show_add,
+    .o_kanban_config {
+        opacity: 0;
+        transition: opacity var(--mkv-transition);
+    }
+
+    &:hover .o_kanban_group_show_add,
+    &:hover .o_kanban_config {
+        opacity: 1;
+    }
+
+    // Botón acción en cabecera (+ / ⋯)
+    .o_kanban_add_column,
+    .o_kanban_quick_add,
+    .o_kanban_toggle_fold {
+        color: var(--mkv-text-muted);
+        font-size: 0.85rem;
+        cursor: pointer;
+        padding: 3px 6px;
+        border-radius: var(--mkv-radius-sm);
+        transition: color var(--mkv-transition), background var(--mkv-transition);
+
+        &:hover {
+            color: var(--mkv-accent);
+            background: var(--mkv-accent-soft);
+        }
+    }
+}
+
+// ─── Progress bar en header ───────────────────────────────────────────────────
+.o_kanban_view .o_kanban_group .o_kanban_progress_bar {
+    margin: 6px 4px 2px;
+
+    .progress {
+        height: 5px;
+        border-radius: 10px;
+        background: var(--mkv-border-color);
+        overflow: hidden;
+
+        .progress-bar {
+            border-radius: 10px;
+            background: var(--mkv-accent);
+            transition: width 400ms cubic-bezier(.4,0,.2,1);
+        }
+
+        .bg-success { background: #22c55e !important; }
+        .bg-danger  { background: #ef4444 !important; }
+        .bg-warning { background: #f59e0b !important; }
+        .bg-info    { background: #38bdf8 !important; }
+    }
+
+    .o_kanban_counter_progress {
+        font-size: 0.7rem;
+        color: var(--mkv-text-muted);
+        margin-top: 3px;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+// ─── Tarjeta Kanban ───────────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_record {
+    background: var(--mkv-bg-card);
+    border: 1px solid var(--mkv-border-card);
+    border-radius: var(--mkv-radius-card);
+    box-shadow: var(--mkv-shadow-card);
+    padding: var(--mkv-card-pad);
+    font-family: var(--mkv-font-base);
+    font-size: var(--mkv-card-body-size);
+    color: var(--mkv-text-card);
+    cursor: pointer;
+    position: relative;
+    transition:
+        box-shadow var(--mkv-transition),
+        background var(--mkv-transition),
+        border-color var(--mkv-transition),
+        transform var(--mkv-transition);
+    will-change: transform, box-shadow;
+
+    &:hover {
+        background: var(--mkv-bg-card-hov);
+        box-shadow: var(--mkv-shadow-card-hov);
+        border-color: #c5ccf0;
+        transform: translateY(-1px);
+    }
+
+    &.o_kanban_selected_card,
+    &.o_record_selected {
+        background: var(--mkv-bg-card-sel);
+        border-color: var(--mkv-accent);
+        box-shadow: 0 0 0 2px var(--mkv-accent-mid);
+    }
+
+    // Strip de color lateral (si la tarjeta tiene color)
+    &[color] {
+        border-left-width: 4px;
+    }
+
+    // ─── Título / nombre dentro de tarjeta ────────────────────────────────
+    .o_kanban_record_title,
+    .oe_kanban_card_title,
+    strong,
+    b {
+        font-size: var(--mkv-card-title-size);
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.4;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    // ─── Cuerpo / subtítulo ───────────────────────────────────────────────
+    .o_kanban_record_body,
+    .oe_kanban_card_body {
+        font-size: var(--mkv-card-body-size);
+        color: var(--mkv-text-card);
+        line-height: 1.5;
+    }
+
+    // ─── Footer (assignee, fecha, tags) ───────────────────────────────────
+    .o_kanban_record_bottom,
+    .oe_kanban_bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid var(--mkv-border-color);
+        flex-wrap: wrap;
+    }
+
+    // ─── Avatar / muchos2muchos personas ──────────────────────────────────
+    .o_field_many2many_avatar img,
+    .o_avatar img,
+    .o_kanban_activity_btn img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px var(--mkv-border-color);
+        object-fit: cover;
+    }
+
+    // ─── Links ────────────────────────────────────────────────────────────
+    a, .o_form_uri {
+        color: var(--mkv-text-link);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color var(--mkv-transition);
+        &:hover {
+            color: var(--mkv-text-link-hov);
+            text-decoration: underline;
+        }
+    }
+
+    // ─── Menú de contexto (tres puntos) ───────────────────────────────────
+    .o_dropdown_kanban,
+    .o_kanban_manage_menu,
+    .o_kanban_record_menu {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        opacity: 0;
+        transition: opacity var(--mkv-transition);
+
+        .dropdown-toggle,
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--mkv-text-muted);
+            padding: 2px 6px;
+            border-radius: var(--mkv-radius-sm);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color var(--mkv-transition), background var(--mkv-transition);
+
+            &:hover {
+                color: var(--mkv-accent);
+                background: var(--mkv-accent-soft);
+            }
+        }
+    }
+
+    &:hover .o_dropdown_kanban,
+    &:hover .o_kanban_manage_menu,
+    &:hover .o_kanban_record_menu {
+        opacity: 1;
+    }
+
+    // ─── Campos numéricos / monetarios ────────────────────────────────────
+    .o_field_monetary,
+    .o_field_float,
+    .o_field_integer {
+        font-family: var(--mkv-font-numeric);
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #1e293b;
+    }
+
+    // ─── Priority / stars ─────────────────────────────────────────────────
+    .o_priority {
+        .o_priority_star {
+            color: #d1d5db;
+            font-size: 0.9rem;
+            transition: color var(--mkv-transition);
+
+            &.fa-star {
+                color: #f59e0b;
+            }
+        }
+    }
+
+    // ─── Activity button ──────────────────────────────────────────────────
+    .o_kanban_activity_btn {
+        font-size: 0.78rem;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+        transition: all var(--mkv-transition);
+
+        &.o_activity_btn_today   { background: #fef3c7; color: #92400e; border: none; }
+        &.o_activity_btn_planned { background: #dbeafe; color: #1e40af; border: none; }
+        &.o_activity_btn_overdue { background: #fee2e2; color: #991b1b; border: none; }
+    }
+
+    // ─── Statusbar inline (colorstrip top) ────────────────────────────────
+    .oe_kanban_colorstrip {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: var(--mkv-radius-card) var(--mkv-radius-card) 0 0;
+        background: var(--mkv-accent);
+    }
+
+    // ─── Imagen/imagen de portada ─────────────────────────────────────────
+    .o_kanban_cover_image {
+        margin: -14px -16px 10px;
+        border-radius: var(--mkv-radius-card) var(--mkv-radius-card) 0 0;
+        overflow: hidden;
+        max-height: 140px;
+
+        img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+        }
+    }
+}
+
+// ─── Fantasma al arrastrar ────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_record.o_drag_source,
+.o_kanban_record.o_sortable_placeholder {
+    opacity: 0.35;
+    border: 2px dashed var(--mkv-accent) !important;
+    background: var(--mkv-bg-ghost) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sortable-ghost,
+.o_drag_ghost {
+    opacity: 0.4;
+    border: 2px dashed var(--mkv-accent) !important;
+    background: var(--mkv-bg-ghost) !important;
+    border-radius: var(--mkv-radius-card) !important;
+    box-shadow: var(--mkv-shadow-drag) !important;
+}
+
+// ─── BADGES y TAGS dentro de tarjetas ────────────────────────────────────────
+.o_kanban_record {
+    .badge {
+        font-size: var(--mkv-badge-size);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 3px 10px;
+        border-radius: 20px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1.4;
+    }
+
+    .badge.text-bg-success, .badge.bg-success       { background: #dcfce7 !important; color: #15803d !important; }
+    .badge.text-bg-danger,  .badge.bg-danger        { background: #fee2e2 !important; color: #b91c1c !important; }
+    .badge.text-bg-warning, .badge.bg-warning       { background: #fef9c3 !important; color: #a16207 !important; }
+    .badge.text-bg-info,    .badge.bg-info          { background: #dbeafe !important; color: #1d4ed8 !important; }
+    .badge.text-bg-primary, .badge.bg-primary       { background: #e0e7ff !important; color: #3730a3 !important; }
+    .badge.text-bg-secondary,.badge.bg-secondary    { background: #f3f4f6 !important; color: #374151 !important; }
+    .badge.text-bg-dark,    .badge.bg-dark          { background: #f3f4f6 !important; color: #374151 !important; }
+    .badge.text-bg-light,   .badge.bg-light         { background: #f8fafc !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
+
+    .o_tag {
+        font-size: 0.70rem;
+        font-weight: 650;
+        letter-spacing: 0.03em;
+        padding: 2px 8px;
+        border-radius: 20px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        line-height: 1.5;
+
+        &:not([style*="background"]) {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+    }
+
+    .o_status {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(0,0,0,.08);
+        &.o_status_green { background: #22c55e; }
+        &.o_status_red   { background: #ef4444; }
+        &.o_status_grey  { background: #d1d5db; }
+    }
+}
+
+// ─── Quick Create (formulario inline de nueva tarjeta) ────────────────────────
+.o_kanban_view .o_kanban_quick_create {
+    background: #ffffff;
+    border: 1.5px solid var(--mkv-accent);
+    border-radius: var(--mkv-radius-card);
+    box-shadow: 0 0 0 3px var(--mkv-accent-mid), var(--mkv-shadow-card-hov);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .o_field_widget input,
+    .o_field_widget textarea,
+    .o_field_widget select {
+        border: 1.5px solid #d1d5e0;
+        border-radius: var(--mkv-radius-sm);
+        padding: 6px 10px;
+        font-size: 0.83rem;
+        font-family: var(--mkv-font-base);
+        outline: none;
+        width: 100%;
+        transition: border-color var(--mkv-transition), box-shadow var(--mkv-transition);
+        background: #fff;
+
+        &:focus {
+            border-color: var(--mkv-accent);
+            box-shadow: 0 0 0 3px var(--mkv-accent-soft);
+        }
+    }
+
+    .o_kanban_add,
+    .o_kanban_edit {
+        background: var(--mkv-accent);
+        color: #fff;
+        border: none;
+        border-radius: var(--mkv-radius-sm);
+        padding: 6px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        font-family: var(--mkv-font-base);
+        cursor: pointer;
+        transition: opacity var(--mkv-transition), transform var(--mkv-transition);
+
+        &:hover { opacity: 0.87; transform: translateY(-1px); }
+    }
+
+    .o_kanban_discard {
+        background: transparent;
+        border: none;
+        color: var(--mkv-text-muted);
+        font-size: 0.82rem;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: var(--mkv-radius-sm);
+        transition: color var(--mkv-transition), background var(--mkv-transition);
+
+        &:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+    }
+}
+
+// ─── Botón "Agregar columna" ──────────────────────────────────────────────────
+.o_kanban_view .o_column_quick_create,
+.o_kanban_view .o_kanban_add_column {
+    .o_quick_create_folded {
+        background: var(--mkv-bg-column);
+        border: 1.5px dashed #c8cfe0;
+        border-radius: var(--mkv-border-radius);
+        color: var(--mkv-text-muted);
+        font-size: 0.83rem;
+        font-weight: 600;
+        font-family: var(--mkv-font-base);
+        padding: 12px 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all var(--mkv-transition);
+        white-space: nowrap;
+
+        &:hover {
+            border-color: var(--mkv-accent);
+            color: var(--mkv-accent);
+            background: var(--mkv-accent-soft);
+        }
+
+        .fa { font-size: 1rem; }
+    }
+
+    .o_quick_create_unfolded {
+        background: #ffffff;
+        border: 1.5px solid var(--mkv-accent);
+        border-radius: var(--mkv-border-radius);
+        box-shadow: 0 0 0 3px var(--mkv-accent-mid);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: var(--mkv-col-min-width);
+
+        input {
+            border: 1.5px solid #d1d5e0;
+            border-radius: var(--mkv-radius-sm);
+            padding: 7px 10px;
+            font-size: 0.85rem;
+            font-family: var(--mkv-font-base);
+            outline: none;
+            width: 100%;
+            transition: border-color var(--mkv-transition), box-shadow var(--mkv-transition);
+
+            &:focus {
+                border-color: var(--mkv-accent);
+                box-shadow: 0 0 0 3px var(--mkv-accent-soft);
+            }
+        }
+
+        .o_kanban_add {
+            background: var(--mkv-accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--mkv-radius-sm);
+            padding: 6px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity var(--mkv-transition);
+
+            &:hover { opacity: 0.85; }
+        }
+
+        .o_kanban_cancel {
+            background: transparent;
+            border: none;
+            color: var(--mkv-text-muted);
+            font-size: 0.82rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--mkv-radius-sm);
+            transition: color var(--mkv-transition);
+
+            &:hover { color: #ef4444; }
+        }
+    }
+}
+
+// ─── Colores de columna (color strips) ───────────────────────────────────────
+// Odoo usa color_0..color_11 en las tarjetas
+.o_kanban_record[color="1"]  { border-left-color: #ef4444; }
+.o_kanban_record[color="2"]  { border-left-color: #f97316; }
+.o_kanban_record[color="3"]  { border-left-color: #f59e0b; }
+.o_kanban_record[color="4"]  { border-left-color: #22c55e; }
+.o_kanban_record[color="5"]  { border-left-color: #14b8a6; }
+.o_kanban_record[color="6"]  { border-left-color: #38bdf8; }
+.o_kanban_record[color="7"]  { border-left-color: #3b5bdb; }
+.o_kanban_record[color="8"]  { border-left-color: #8b5cf6; }
+.o_kanban_record[color="9"]  { border-left-color: #ec4899; }
+.o_kanban_record[color="10"] { border-left-color: #6b7280; }
+.o_kanban_record[color="11"] { border-left-color: #1e293b; }
+
+// ─── Searchpanel (si aplica) ──────────────────────────────────────────────────
+.o_search_panel {
+    border-right: 1px solid var(--mkv-border-color);
+    background: #fff;
+}
+
+// ─── Empty state ─────────────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_group .o_kanban_no_records,
+.o_kanban_view .o_nocontent_help {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--mkv-text-muted);
+    font-size: 0.85rem;
+
+    .o_nocontent_descr {
+        margin-top: 8px;
+        font-size: 0.78rem;
+    }
+}
+
+// ─── Botón "Agregar una tarjeta" al final de columna ─────────────────────────
+.o_kanban_view .o_kanban_group .o_kanban_add_record_button,
+.o_kanban_view .o_kanban_quick_add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: var(--mkv-radius-sm);
+    font-size: 0.80rem;
+    font-weight: 600;
+    font-family: var(--mkv-font-base);
+    color: var(--mkv-text-muted);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: color var(--mkv-transition), background var(--mkv-transition);
+
+    &:hover {
+        color: var(--mkv-accent);
+        background: var(--mkv-accent-soft);
+    }
+
+    .fa { font-size: 0.85rem; }
+}
+
+// ─── Mobile / responsive ──────────────────────────────────────────────────────
+@media (max-width: 768px) {
+    :root {
+        --mkv-col-width: 90vw;
+        --mkv-col-min-width: 260px;
+    }
+
+    .o_kanban_view {
+        padding: 10px;
+        gap: 10px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+}
