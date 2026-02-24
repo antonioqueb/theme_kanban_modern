@@ -1,24 +1,15 @@
 /**
- * Modern Kanban View Theme v1 - KanbanRenderer Patch
+ * Modern Kanban View Theme v1.1 - KanbanRenderer Patch
  * Alphaqueb Consulting SAS
  *
- * Responsabilidades:
- *  - Añadir clase "mkv-enhanced" al root del kanban tras render
- *  - Inyectar badge contador dinámico en cada columna
- *  - Añadir tooltips en campos truncados dentro de tarjetas
- *  - Forzar ancho de columnas cuando Odoo lo resetea
- *  - MutationObserver global para columnas y tarjetas añadidas dinámicamente
+ * v1.1: eliminados counters duplicados si Odoo ya los renderiza,
+ *       tooltips solo en texto real, enforceColumnWidths preservado.
  */
 import { patch }          from "@web/core/utils/patch";
 import { KanbanRenderer } from "@web/views/kanban/kanban_renderer";
 import { onMounted, onPatched } from "@odoo/owl";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Actualiza el contador de tarjetas visible en el header de cada columna.
- * Odoo ya muestra un contador en algunos layouts, pero lo unificamos.
- */
+// ─── Contador de tarjetas por columna ────────────────────────────────────────
 function updateColumnCounters(rootEl) {
     if (!rootEl) return;
 
@@ -28,8 +19,17 @@ function updateColumnCounters(rootEl) {
         );
         const count = cards.length;
 
+        // Si ya existe un counter nativo de Odoo, no duplicamos
         let badge = col.querySelector(".mkv-col-counter");
         if (!badge) {
+            // Solo inyectar si no hay un .o_kanban_counter nativo ya visible
+            const nativeBadge = col.querySelector(".o_kanban_header .o_kanban_counter:not(.mkv-col-counter)");
+            if (nativeBadge) {
+                // Actualizamos el nativo en lugar de duplicar
+                nativeBadge.textContent = count;
+                return;
+            }
+
             badge = document.createElement("span");
             badge.className = "o_kanban_counter mkv-col-counter";
 
@@ -41,40 +41,35 @@ function updateColumnCounters(rootEl) {
     });
 }
 
-/**
- * Añade tooltips en elementos con overflow dentro de tarjetas.
- */
+// ─── Tooltips en texto truncado ───────────────────────────────────────────────
 function addCardTooltips(rootEl) {
     if (!rootEl) return;
 
-    rootEl.querySelectorAll(".o_kanban_record *").forEach((el) => {
-        if (el._mkvTip) return;
-        if (!["SPAN", "DIV", "P", "TD", "A", "STRONG", "B"].includes(el.tagName)) return;
-        el._mkvTip = true;
+    rootEl.querySelectorAll(".o_kanban_record").forEach((card) => {
+        // Solo elementos de texto directo, no contenedores con hijos complejos
+        card.querySelectorAll("span, a, strong, b, p").forEach((el) => {
+            if (el._mkvTip) return;
+            // Saltar si tiene hijos que no sean texto
+            if (el.children.length > 0) return;
+            el._mkvTip = true;
 
-        el.addEventListener("mouseenter", () => {
-            const overflowing =
-                el.scrollWidth > el.clientWidth + 2 ||
-                el.scrollHeight > el.clientHeight + 2;
-            if (overflowing) {
-                const text = el.textContent.trim();
-                if (text) el.setAttribute("title", text);
-            } else {
-                el.removeAttribute("title");
-            }
+            el.addEventListener("mouseenter", () => {
+                if (el.scrollWidth > el.clientWidth + 2) {
+                    const text = el.textContent.trim();
+                    if (text) el.setAttribute("title", text);
+                } else {
+                    el.removeAttribute("title");
+                }
+            });
         });
     });
 }
 
-/**
- * Asegura que las columnas mantengan el ancho definido en CSS (Odoo a veces
- * aplica estilos inline que lo rompen).
- */
+// ─── Evitar que Odoo aplique width inline muy pequeño ────────────────────────
 function enforceColumnWidths(rootEl) {
     if (!rootEl) return;
 
     rootEl.querySelectorAll(".o_kanban_group:not(.o_column_folded)").forEach((col) => {
-        // Solo limpiamos si Odoo puso un width inline muy pequeño
         if (col.style.width && parseInt(col.style.width) < 200) {
             col.style.removeProperty("width");
             col.style.removeProperty("min-width");
@@ -82,9 +77,6 @@ function enforceColumnWidths(rootEl) {
     });
 }
 
-/**
- * Aplica todas las mejoras de una vez.
- */
 function applyEnhancements(rootEl) {
     if (!rootEl) return;
     updateColumnCounters(rootEl);
@@ -92,7 +84,7 @@ function applyEnhancements(rootEl) {
     enforceColumnWidths(rootEl);
 }
 
-// ─── Patch al KanbanRenderer ──────────────────────────────────────────────────
+// ─── Patch KanbanRenderer ─────────────────────────────────────────────────────
 patch(KanbanRenderer.prototype, {
     setup() {
         super.setup(...arguments);
@@ -100,10 +92,7 @@ patch(KanbanRenderer.prototype, {
         const apply = () => {
             const root = this.el;
             if (!root) return;
-
-            // Marca raíz para posible uso CSS extra
             root.classList.add("mkv-enhanced");
-
             applyEnhancements(root);
         };
 
@@ -113,7 +102,6 @@ patch(KanbanRenderer.prototype, {
 });
 
 // ─── MutationObserver global ──────────────────────────────────────────────────
-// Captura columnas y tarjetas que entren al DOM (ej. lazy load, drag & drop)
 const _mo = new MutationObserver((mutations) => {
     for (const m of mutations) {
         for (const node of m.addedNodes) {
@@ -124,10 +112,7 @@ const _mo = new MutationObserver((mutations) => {
 
             if (!isKanban && !inKanban) continue;
 
-            const root = isKanban
-                ? node
-                : node.closest(".o_kanban_view");
-
+            const root = isKanban ? node : node.closest(".o_kanban_view");
             if (root) applyEnhancements(root);
         }
     }
@@ -135,8 +120,6 @@ const _mo = new MutationObserver((mutations) => {
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
-        _mo.observe(document.body, { childList: true, subtree: true });
-    },
+    () => { _mo.observe(document.body, { childList: true, subtree: true }); },
     { once: true }
 );

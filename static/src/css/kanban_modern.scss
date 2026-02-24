@@ -1,13 +1,14 @@
 /**
- * Modern Kanban View Theme v1 - Odoo 19 (Light Theme)
+ * Modern Kanban View Theme v1.1 - Odoo 19 (Light Theme)
  * Alphaqueb Consulting SAS
  *
- * Misma paleta y variables que Modern List View Theme v2
- * Aplicado a: columnas kanban, tarjetas, headers, badges, progressbars,
- *             quick-create, drag ghost, tooltips y scrollbars.
+ * v1.1 fixes:
+ *  - Search panel / barra de búsqueda: sin tocar (reset completo)
+ *  - Empty state eliminado (sin secciones vacías al no haber tarjetas)
+ *  - Tarjetas con altura fija uniforme
  */
 
-// ─── Variables (espejo de list theme) ────────────────────────────────────────
+// ─── Variables ────────────────────────────────────────────────────────────────
 :root {
     --mkv-font-base:    'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --mkv-font-numeric: 'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -41,27 +42,44 @@
     --mkv-accent-mid:     rgba(59, 91, 219, 0.18);
 
     // Sombras
-    --mkv-shadow-col:     0 2px 8px rgba(0,0,0,.06);
-    --mkv-shadow-card:    0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
-    --mkv-shadow-card-hov:0 4px 12px rgba(59,91,219,.12), 0 8px 32px rgba(0,0,0,.08);
-    --mkv-shadow-drag:    0 8px 30px rgba(59,91,219,.20), 0 2px 8px rgba(0,0,0,.12);
+    --mkv-shadow-col:      0 2px 8px rgba(0,0,0,.06);
+    --mkv-shadow-card:     0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    --mkv-shadow-card-hov: 0 4px 12px rgba(59,91,219,.12), 0 8px 32px rgba(0,0,0,.08);
+    --mkv-shadow-drag:     0 8px 30px rgba(59,91,219,.20), 0 2px 8px rgba(0,0,0,.12);
 
     // Transición
-    --mkv-transition:     150ms cubic-bezier(.4,0,.2,1);
+    --mkv-transition: 150ms cubic-bezier(.4,0,.2,1);
 
     // Tipografía
-    --mkv-col-title-size: 0.82rem;
-    --mkv-col-title-w:    700;
-    --mkv-card-title-size:0.875rem;
-    --mkv-card-body-size: 0.78rem;
-    --mkv-badge-size:     0.72rem;
+    --mkv-col-title-size:  0.82rem;
+    --mkv-col-title-w:     700;
+    --mkv-card-title-size: 0.875rem;
+    --mkv-card-body-size:  0.78rem;
+    --mkv-badge-size:      0.72rem;
 
     // Spacing
-    --mkv-col-gap:        14px;
-    --mkv-col-pad:        12px;
-    --mkv-card-pad:       14px 16px;
-    --mkv-col-width:      272px;
-    --mkv-col-min-width:  230px;
+    --mkv-col-gap:       14px;
+    --mkv-col-pad:       12px;
+    --mkv-card-pad:      14px 16px;
+    --mkv-col-width:     272px;
+    --mkv-col-min-width: 230px;
+
+    // Altura fija de tarjeta
+    --mkv-card-height:   160px;
+}
+
+// ─── Barra de búsqueda / control panel — SIN TOCAR ───────────────────────────
+// Reset completo para que quede idéntica a Odoo original
+.o_control_panel,
+.o_searchview,
+.o_searchview_input,
+.o_searchview .o_searchview_input_container,
+.o_cp_searchview,
+.o_search_panel,
+.o_facet_values,
+.o_dropdown_menu,
+.o_searchview_dropdown_toggler {
+    all: revert !important;
 }
 
 // ─── Contenedor principal Kanban ──────────────────────────────────────────────
@@ -71,7 +89,6 @@
     gap: var(--mkv-col-gap);
     align-items: flex-start;
 
-    // Scrollbar horizontal
     &::-webkit-scrollbar        { height: 7px; }
     &::-webkit-scrollbar-track  { background: transparent; }
     &::-webkit-scrollbar-thumb  {
@@ -97,11 +114,9 @@
     gap: 8px;
     transition: background var(--mkv-transition);
 
-    // Columna plegada
     &.o_column_folded {
         width: 52px;
         min-width: 52px;
-        background: var(--mkv-bg-column);
         border-style: dashed;
         cursor: pointer;
         align-items: center;
@@ -118,14 +133,12 @@
         &:hover { background: var(--mkv-bg-column-hov); }
     }
 
-    // Columna activa al hacer drop
     &.o_kanban_drag_active_col {
         background: #eef1ff;
         border-color: var(--mkv-accent);
         box-shadow: 0 0 0 2px var(--mkv-accent-mid);
     }
 
-    // Scrollbar vertical dentro de columna
     .o_kanban_group_list {
         flex: 1;
         overflow-y: auto;
@@ -180,7 +193,6 @@
         max-width: 150px;
     }
 
-    // Badge contador de tarjetas
     .o_kanban_counter {
         font-family: var(--mkv-font-numeric);
         font-size: 0.72rem;
@@ -194,7 +206,6 @@
         letter-spacing: 0.01em;
     }
 
-    // Progresbar monetaria
     .o_kanban_group_show_add,
     .o_kanban_config {
         opacity: 0;
@@ -202,11 +213,8 @@
     }
 
     &:hover .o_kanban_group_show_add,
-    &:hover .o_kanban_config {
-        opacity: 1;
-    }
+    &:hover .o_kanban_config { opacity: 1; }
 
-    // Botón acción en cabecera (+ / ⋯)
     .o_kanban_add_column,
     .o_kanban_quick_add,
     .o_kanban_toggle_fold {
@@ -254,7 +262,7 @@
     }
 }
 
-// ─── Tarjeta Kanban ───────────────────────────────────────────────────────────
+// ─── Tarjeta Kanban — altura fija uniforme ────────────────────────────────────
 .o_kanban_view .o_kanban_record {
     background: var(--mkv-bg-card);
     border: 1px solid var(--mkv-border-card);
@@ -266,6 +274,18 @@
     color: var(--mkv-text-card);
     cursor: pointer;
     position: relative;
+
+    // Altura fija — todas las tarjetas del mismo tamaño
+    height: var(--mkv-card-height);
+    min-height: var(--mkv-card-height);
+    max-height: var(--mkv-card-height);
+    overflow: hidden;
+
+    // Layout interno en columna para distribuir título + body + footer
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
     transition:
         box-shadow var(--mkv-transition),
         background var(--mkv-transition),
@@ -287,12 +307,9 @@
         box-shadow: 0 0 0 2px var(--mkv-accent-mid);
     }
 
-    // Strip de color lateral (si la tarjeta tiene color)
-    &[color] {
-        border-left-width: 4px;
-    }
+    &[color] { border-left-width: 4px; }
 
-    // ─── Título / nombre dentro de tarjeta ────────────────────────────────
+    // ─── Título ───────────────────────────────────────────────────────────
     .o_kanban_record_title,
     .oe_kanban_card_title,
     strong,
@@ -303,30 +320,36 @@
         line-height: 1.4;
         margin-bottom: 4px;
         display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    // ─── Cuerpo / subtítulo ───────────────────────────────────────────────
+    // ─── Cuerpo ───────────────────────────────────────────────────────────
     .o_kanban_record_body,
     .oe_kanban_card_body {
         font-size: var(--mkv-card-body-size);
         color: var(--mkv-text-card);
         line-height: 1.5;
+        flex: 1;
+        overflow: hidden;
     }
 
-    // ─── Footer (assignee, fecha, tags) ───────────────────────────────────
+    // ─── Footer ───────────────────────────────────────────────────────────
     .o_kanban_record_bottom,
     .oe_kanban_bottom {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-top: 10px;
+        margin-top: 8px;
         padding-top: 8px;
         border-top: 1px solid var(--mkv-border-color);
         flex-wrap: wrap;
+        flex-shrink: 0;
     }
 
-    // ─── Avatar / muchos2muchos personas ──────────────────────────────────
+    // ─── Avatar ───────────────────────────────────────────────────────────
     .o_field_many2many_avatar img,
     .o_avatar img,
     .o_kanban_activity_btn img {
@@ -350,7 +373,7 @@
         }
     }
 
-    // ─── Menú de contexto (tres puntos) ───────────────────────────────────
+    // ─── Menú contextual ──────────────────────────────────────────────────
     .o_dropdown_kanban,
     .o_kanban_manage_menu,
     .o_kanban_record_menu {
@@ -380,11 +403,9 @@
 
     &:hover .o_dropdown_kanban,
     &:hover .o_kanban_manage_menu,
-    &:hover .o_kanban_record_menu {
-        opacity: 1;
-    }
+    &:hover .o_kanban_record_menu { opacity: 1; }
 
-    // ─── Campos numéricos / monetarios ────────────────────────────────────
+    // ─── Numéricos / monetarios ───────────────────────────────────────────
     .o_field_monetary,
     .o_field_float,
     .o_field_integer {
@@ -396,16 +417,11 @@
     }
 
     // ─── Priority / stars ─────────────────────────────────────────────────
-    .o_priority {
-        .o_priority_star {
-            color: #d1d5db;
-            font-size: 0.9rem;
-            transition: color var(--mkv-transition);
-
-            &.fa-star {
-                color: #f59e0b;
-            }
-        }
+    .o_priority .o_priority_star {
+        color: #d1d5db;
+        font-size: 0.9rem;
+        transition: color var(--mkv-transition);
+        &.fa-star { color: #f59e0b; }
     }
 
     // ─── Activity button ──────────────────────────────────────────────────
@@ -415,13 +431,12 @@
         border-radius: 20px;
         font-weight: 600;
         transition: all var(--mkv-transition);
-
         &.o_activity_btn_today   { background: #fef3c7; color: #92400e; border: none; }
         &.o_activity_btn_planned { background: #dbeafe; color: #1e40af; border: none; }
         &.o_activity_btn_overdue { background: #fee2e2; color: #991b1b; border: none; }
     }
 
-    // ─── Statusbar inline (colorstrip top) ────────────────────────────────
+    // ─── Color strip top ──────────────────────────────────────────────────
     .oe_kanban_colorstrip {
         position: absolute;
         top: 0; left: 0; right: 0;
@@ -430,42 +445,22 @@
         background: var(--mkv-accent);
     }
 
-    // ─── Imagen/imagen de portada ─────────────────────────────────────────
+    // ─── Cover image ──────────────────────────────────────────────────────
     .o_kanban_cover_image {
         margin: -14px -16px 10px;
         border-radius: var(--mkv-radius-card) var(--mkv-radius-card) 0 0;
         overflow: hidden;
-        max-height: 140px;
+        max-height: 80px;
+        flex-shrink: 0;
 
         img {
             width: 100%;
-            height: 140px;
+            height: 80px;
             object-fit: cover;
         }
     }
-}
 
-// ─── Fantasma al arrastrar ────────────────────────────────────────────────────
-.o_kanban_view .o_kanban_record.o_drag_source,
-.o_kanban_record.o_sortable_placeholder {
-    opacity: 0.35;
-    border: 2px dashed var(--mkv-accent) !important;
-    background: var(--mkv-bg-ghost) !important;
-    box-shadow: none !important;
-    transform: none !important;
-}
-
-.sortable-ghost,
-.o_drag_ghost {
-    opacity: 0.4;
-    border: 2px dashed var(--mkv-accent) !important;
-    background: var(--mkv-bg-ghost) !important;
-    border-radius: var(--mkv-radius-card) !important;
-    box-shadow: var(--mkv-shadow-drag) !important;
-}
-
-// ─── BADGES y TAGS dentro de tarjetas ────────────────────────────────────────
-.o_kanban_record {
+    // ─── BADGES ───────────────────────────────────────────────────────────
     .badge {
         font-size: var(--mkv-badge-size);
         font-weight: 700;
@@ -517,7 +512,43 @@
     }
 }
 
-// ─── Quick Create (formulario inline de nueva tarjeta) ────────────────────────
+// ─── Estado vacío — columna sin tarjetas: NO mostrar nada extra ───────────────
+// Odoo renderiza .o_kanban_no_records y helpers vacíos; los colapsamos.
+.o_kanban_view .o_kanban_group .o_kanban_no_records,
+.o_kanban_view .o_kanban_group .o_nocontent_help,
+.o_kanban_view .o_kanban_group .o_view_nocontent {
+    display: none !important;
+}
+
+// El empty state global (cuando NO hay grupos) sí se muestra, pero sin padding extra.
+.o_kanban_view > .o_nocontent_help,
+.o_kanban_view > .o_view_nocontent {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--mkv-text-muted);
+    font-size: 0.88rem;
+}
+
+// ─── Fantasma al arrastrar ────────────────────────────────────────────────────
+.o_kanban_view .o_kanban_record.o_drag_source,
+.o_kanban_record.o_sortable_placeholder {
+    opacity: 0.35;
+    border: 2px dashed var(--mkv-accent) !important;
+    background: var(--mkv-bg-ghost) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sortable-ghost,
+.o_drag_ghost {
+    opacity: 0.4;
+    border: 2px dashed var(--mkv-accent) !important;
+    background: var(--mkv-bg-ghost) !important;
+    border-radius: var(--mkv-radius-card) !important;
+    box-shadow: var(--mkv-shadow-drag) !important;
+}
+
+// ─── Quick Create ─────────────────────────────────────────────────────────────
 .o_kanban_view .o_kanban_quick_create {
     background: #ffffff;
     border: 1.5px solid var(--mkv-accent);
@@ -559,7 +590,6 @@
         font-family: var(--mkv-font-base);
         cursor: pointer;
         transition: opacity var(--mkv-transition), transform var(--mkv-transition);
-
         &:hover { opacity: 0.87; transform: translateY(-1px); }
     }
 
@@ -572,11 +602,7 @@
         padding: 6px 10px;
         border-radius: var(--mkv-radius-sm);
         transition: color var(--mkv-transition), background var(--mkv-transition);
-
-        &:hover {
-            color: #ef4444;
-            background: #fee2e2;
-        }
+        &:hover { color: #ef4444; background: #fee2e2; }
     }
 }
 
@@ -628,7 +654,6 @@
             outline: none;
             width: 100%;
             transition: border-color var(--mkv-transition), box-shadow var(--mkv-transition);
-
             &:focus {
                 border-color: var(--mkv-accent);
                 box-shadow: 0 0 0 3px var(--mkv-accent-soft);
@@ -645,7 +670,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: opacity var(--mkv-transition);
-
             &:hover { opacity: 0.85; }
         }
 
@@ -658,14 +682,12 @@
             padding: 6px;
             border-radius: var(--mkv-radius-sm);
             transition: color var(--mkv-transition);
-
             &:hover { color: #ef4444; }
         }
     }
 }
 
-// ─── Colores de columna (color strips) ───────────────────────────────────────
-// Odoo usa color_0..color_11 en las tarjetas
+// ─── Colores de tarjeta ───────────────────────────────────────────────────────
 .o_kanban_record[color="1"]  { border-left-color: #ef4444; }
 .o_kanban_record[color="2"]  { border-left-color: #f97316; }
 .o_kanban_record[color="3"]  { border-left-color: #f59e0b; }
@@ -678,27 +700,7 @@
 .o_kanban_record[color="10"] { border-left-color: #6b7280; }
 .o_kanban_record[color="11"] { border-left-color: #1e293b; }
 
-// ─── Searchpanel (si aplica) ──────────────────────────────────────────────────
-.o_search_panel {
-    border-right: 1px solid var(--mkv-border-color);
-    background: #fff;
-}
-
-// ─── Empty state ─────────────────────────────────────────────────────────────
-.o_kanban_view .o_kanban_group .o_kanban_no_records,
-.o_kanban_view .o_nocontent_help {
-    padding: 32px 16px;
-    text-align: center;
-    color: var(--mkv-text-muted);
-    font-size: 0.85rem;
-
-    .o_nocontent_descr {
-        margin-top: 8px;
-        font-size: 0.78rem;
-    }
-}
-
-// ─── Botón "Agregar una tarjeta" al final de columna ─────────────────────────
+// ─── Botón "Agregar tarjeta" al final de columna ──────────────────────────────
 .o_kanban_view .o_kanban_group .o_kanban_add_record_button,
 .o_kanban_view .o_kanban_quick_add {
     display: flex;
@@ -724,7 +726,7 @@
     .fa { font-size: 0.85rem; }
 }
 
-// ─── Mobile / responsive ──────────────────────────────────────────────────────
+// ─── Mobile ───────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
     :root {
         --mkv-col-width: 90vw;
